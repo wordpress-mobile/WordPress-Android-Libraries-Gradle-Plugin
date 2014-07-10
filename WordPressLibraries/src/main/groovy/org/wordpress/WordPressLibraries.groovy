@@ -19,13 +19,13 @@ class WordPressLibraries implements Plugin<Project> {
                 if (isLocal(lib)) {
                     // set the source dependencies
                     def dep = ":libs:$lib.name:$lib.subproject"
-                    prj.logger.lifecycle "Using local source for $dep"
+                    prj.logger.lifecycle "$prj.name using local source for $lib.name $dep"
                     prj.dependencies {
                         compile project(path:dep)
                     }
                 } else {
                     // set the artifact dependency sine the source is not local
-                    prj.logger.lifecycle "Using artifact for $lib.name"
+                    prj.logger.lifecycle "$prj.name using artifact for $lib.name $lib.artifact"
                     prj.dependencies {
                         compile lib.artifact
                     }
@@ -33,11 +33,11 @@ class WordPressLibraries implements Plugin<Project> {
             }
         }
 
-        prj.task('wordpressCreateLibDir') << {
+        prj.task('createWordPressLibraryDirectory') << {
             libDir.mkdirs()
         }
 
-        prj.task('devSetup', dependsOn:'wordpressCreateLibDir') {
+        prj.task('cloneWordPressLibraries', dependsOn:'createWordPressLibraryDirectory') {
             doLast {
                 libraries.each { library -> 
                     def dir = localDirectory(library)

@@ -3,9 +3,9 @@ apply plugin:'groovy'
 apply plugin:'maven'
 apply plugin:'signing'
 
-version '1.0.0'
-group 'com.automattic'
-archivesBaseName = 'wordpress-libraries'
+version '1.1.0'
+group 'com.automattic.android'
+archivesBaseName = 'gradle-wordpresslibraries'
 
 repositories {
     mavenCentral()
@@ -34,4 +34,53 @@ artifacts {
 
 signing {
     sign configurations.archives
+}
+
+// http://central.sonatype.org/pages/gradle.html
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+              authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+              authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'WordPress Libraries Gradle Plugin'
+                packaging 'jar'
+                description 'A Gradle plugin for configuring WordPress Android library dependency development setup.'
+                url 'https://github.com/wordpress-mobile/WordPress-Android-Libraries-Gradle-Plugin'
+                scm {
+                    connection 'scm:git:https://github.com/wordpress-mobile/WordPress-Android-Libraries-Gradle-Plugin.git'
+                    developerConnection 'scm:git:https://github.com/wordpress-mobile/WordPress-Android-Libraries-Gradle-Plugin.git'
+                    url 'https://github.com/wordpress-mobile/WordPress-Android-Libraries-Gradle-Plugin.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The MIT License (MIT)'
+                        url 'http://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+
+                    developer {
+                        id 'beaucollins'
+                        name 'Robert Collins'
+                        email 'robert@automattic.com'
+                    }
+
+                }
+
+            }
+
+        }
+    }
 }
