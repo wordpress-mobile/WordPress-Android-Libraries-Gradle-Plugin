@@ -19,10 +19,17 @@ class WordPressLibraries implements Plugin<Project> {
                 if (isLocal(lib)) {
                     // set the source dependencies
                     def dep = ":libs:$lib.name:$lib.subproject"
-                    prj.logger.lifecycle "$prj.name using local source for $lib.name $dep"
+                    prj.logger.lifecycle "$prj.name debug using local source for $lib.name $dep"
+                    prj.logger.lifecycle "$prj.name release using artifact for $lib.name $lib.artifact"
+
+                    // HACK: force libraries to build using `debug` buildType when building from source
+                    prj.android {
+                        defaultPublishConfig 'debug'
+                    } 
+
                     prj.dependencies {
+                        debugCompile project(path:dep)
                         releaseCompile lib.artifact
-                        debugCompile project(path:dep, configuration:"debugCompile")
                     }
                 } else {
                     // set the artifact dependency sine the source is not local
