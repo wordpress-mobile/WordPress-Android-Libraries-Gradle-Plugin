@@ -64,7 +64,7 @@ include ':libs:utils:WordPressUtils'
 To checkout all the projects locally run the `cloneWordPressLibraries` task.
 
     gradle cloneWordPressLibraries
-    
+
 This task will create a `libs` directory in the root project directory and clone each repository here. WordPress libraries declared within other libraries will also be cloned here (e.g. `WordPressNetworking` declares the `WordPressUtils` library so it will reuse the library already declared by the main `WordPress` project).
 
 Now when building you will see notices that the projects are building from source:
@@ -75,3 +75,10 @@ WordPress using local source for :libs:utils:WordPressUtils
 WordPressNetworking using local source for :libs:utils:WordPressUtils
 WordPressNetworking using local source for :libs:wpcomrest:WordPressComRest
 ```
+
+## Hack this plugin
+
+Start by copying our example `gradle.properties` and change default values to match your configuration:
+
+    $ cp WordPressLibraries/gradle.properties-example WordPressLibraries/gradle.properties
+
