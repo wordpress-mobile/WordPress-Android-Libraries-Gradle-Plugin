@@ -6,37 +6,33 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class WordPressLibraries implements Plugin<Project> {
-
     def File libDir
 
     void apply(Project prj) {
-
         libDir = new File("${prj.rootDir}/libs")
         def libraries = prj.container(Library)
 
         prj.afterEvaluate {
             libraries.each { lib ->
-                if (isLocal(lib)) {
-                    // set the source dependencies
-                    def dep = ":libs:$lib.name:$lib.subproject"
-                    prj.logger.lifecycle "$prj.name debug using local source for $lib.name $dep"
-                    prj.logger.lifecycle "$prj.name release using artifact for $lib.name $lib.artifact"
+                if (!isValidLibrary(lib)) {
+                    prj.logger.warn("WARNING: $libDir/$lib.name is not a valid library directory, " +
+                        "you won't be able to build the DEBUG configuration.\n" +
+                        "WARNING: It'll cause a \"Configuration with name 'default' not found\" error.")
+                }
 
-                    // HACK: force libraries to build using `debug` buildType when building from source
-                    prj.android {
-                        defaultPublishConfig 'debug'
-                    } 
+                // set the source dependencies
+                def dep = ":libs:$lib.name:$lib.subproject"
+                prj.logger.lifecycle "$prj.name debug using local source for $lib.name $dep"
+                prj.logger.lifecycle "$prj.name release using artifact for $lib.name $lib.artifact"
 
-                    prj.dependencies {
-                        debugCompile project(path:dep)
-                        releaseCompile lib.artifact
-                    }
-                } else {
-                    // set the artifact dependency sine the source is not local
-                    prj.logger.lifecycle "$prj.name using artifact for $lib.name $lib.artifact"
-                    prj.dependencies {
-                        compile lib.artifact
-                    }
+                // HACK: force libraries to build using `debug` buildType when building from source
+                prj.android {
+                    defaultPublishConfig 'debug'
+                }
+
+                prj.dependencies {
+                    debugCompile project(path:dep)
+                    releaseCompile lib.artifact
                 }
             }
         }
@@ -50,7 +46,7 @@ class WordPressLibraries implements Plugin<Project> {
                 libraries.each { library ->
                     def dir = localDirectory(library)
                     def uri = library.repo
-                    if (!isLocal(library)) {
+                    if (!isValidLibrary(library)) {
                         prj.logger.info "Setting up WordPress library $library.name from $uri"
                         def repo = Grgit.clone(dir:dir, uri:uri)
                     } else {
@@ -63,14 +59,17 @@ class WordPressLibraries implements Plugin<Project> {
         prj.extensions.wordpress = libraries
     }
 
-    def boolean isLocal(Library library) {
-        return localDirectory(library).isDirectory()
+    /**
+     * Check the library directory exists and contains a build.gradle file
+     */
+    def boolean isValidLibrary(Library library) {
+        File gradleBuildFile = new File("$libDir/$library.name/build.gradle")
+        return gradleBuildFile.exists()
     }
 
     def File localDirectory(Library library) {
         return new File("$libDir/$library.name")
     }
-
 }
 
 class Library {
@@ -111,5 +110,4 @@ class Library {
 
         this.repo = name
     }
-
 }
